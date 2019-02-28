@@ -1,0 +1,28 @@
+#!/bin/bash
+##############################
+# Damien Berry : berry.damien@gmail.com
+##############################
+# Start of script
+# Global environment variables
+source /etc/profile
+# Local variables
+MAIL=you@domain.com
+TMP_FILE=/tmp/backup.html
+# generate HTML page
+curl -s http://127.0.0.1/index.cgi?action=summary -o $TMP_FILE
+# post-treatment : remove left menu
+sed -i '/<div class="NavMenu" id="NavMenu" style="height:100%">/,/<br><br><br>/d' $TMP_FILE
+# post-treatment : change link for use hostname
+sed -i 's/\/index.cgi?host/https:\/\/'`hostname -f`'\/index.cgi?host/g' $TMP_FILE
+# post-treatment : change title - link to hostname
+sed -i 's/<div class="h1">BackupPC: Bilan des machines<\/div>/<h2 align="center"><a href="http:\/\/'`hostname -f`'">BackupPC<\/a><\/h2> <div class="h1">Bilan des machines<\/div>/g' $TMP_FILE
+# send mail
+cat $TMP_FILE  | mail -a "Content-Type: text/html; charset=UTF-8" -s "[BackupPC] Bilan - `/bin/date +\%d-\%m-\%Y`" $MAIL
+# remove tmp file
+rm $TMP_FILE
+# remove local variables
+unset MAIL
+unset TMP_FILE
+#
+exit 0
+# End of script
